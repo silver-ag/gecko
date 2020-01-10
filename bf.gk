@@ -1,4 +1,8 @@
-#lang mr
+#lang gecko
+
+// implements brainfuck
+// io is in unary, sorry about that
+// (poves turing completeness, illustrates the language in use)
 
 -> "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++."
 

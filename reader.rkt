@@ -7,7 +7,7 @@
   (define parse-tree (parse path (make-tokeniser port)))
   (datum->syntax
    #f
-   `(module gk-mod mr/expander ,parse-tree)))
+   `(module gk-mod gecko/expander ,parse-tree)))
 
 (define (make-tokeniser port)
   (define (next-token)

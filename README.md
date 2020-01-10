@@ -70,3 +70,6 @@ map "(.*):(.*)"
   "\2\1"
 // maps hello:world to [world][hello]
 ```
+
+## Installation
+should be as simple as `raco pkg install path/to/gecko`, then you'll be able to use it in racket as `#lang gecko`
