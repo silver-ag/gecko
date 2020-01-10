@@ -1,0 +1,103 @@
+#lang mr
+
+-> "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++."
+
+. -> "\0:,E:" // code:stack(end-of-stack marker):output
+
+error: {
+  . -> "ERROR: '\0'"
+  halt
+}
+
+instruction: {
+  if "\+.*"
+    plus
+  if "-.*"
+    minus
+  if ">.*"
+    forwards
+  if "<.*"
+    backwards
+  if "\..*"
+    output
+  if ",.*"
+    input
+  if "\[.*"
+    loop
+    { "(.).*" -> "no such instruction: \1"
+      error }
+}
+
+plus: {
+  "\+(.*):(.*):(.*)" -> "\1:1\2:\3"
+}
+
+minus: {
+  if ".*:,.*:.*" // current value is zero
+     { . -> "cannot subtract from 0"
+       error }
+    "-(.*):1(.*):(.*)" -> "\1:\2:\3"
+}
+
+forwards: {
+  if ".*:1*,.*E:.*" // end of stack up next
+    ">(.*):(1*),(.*)E:(.*)" -> "\1:,\2,\3E:\4"
+    ">(.*):(.*),(1*):(.*)" -> "\1:\3,\2:\4"
+}
+
+backwards: {
+  if ".*:1*,E.*:.*" // end of stack up next
+     "<(.*):(1*),E(.*):(.*)" -> "\1:,E\3,\2:\4"
+     "<(.*):(1*),(.*):(.*)" -> "\1:\3,\2:\4"
+}
+
+output: {
+  "\.(.*):(1*)(.*):(.*)" -> "\1:\2\3:\4[\2]"
+}
+
+input: {
+  ",(.*):(a*),(.*):(.*)" -> "\1:\@,\3:\4"
+}
+
+loop: {
+  if ".*:,.*:.*" // current cell is zero
+     {"\[(.*)" -> "\1|" // append bracket count of zero
+      removeloop}
+     {"\[(.*)" -> "\1||" // bracket count of zero and empty loop copy
+      prependloop}
+}
+
+removeloop: {
+  if "\].*"
+    if ".*:.*:.*\|" // bracket counter is zero
+      "\](.*)\|" -> "\1"
+      {"\](.*)\|1(1*)" -> "\1|\2"
+       removeloop}
+    {if "\[.*"
+      "\[(.*)" -> "\11" // add to bracket counter
+      if ".+:.*"
+        ".(.*)" -> "\1"
+        {-> "mismatched brackets"
+         error}
+    removeloop}
+}
+
+prependloop: {
+  if "\].*"
+    if ".*:.*:.*\|.*\|"
+      "\](.*):(.*):(.*)\|(.*)\|" -> "\4\[\4\]\1:\2:\3"
+      {"\](.*)\|(.*)\|1(1*)" -> "\1|\2\]|\3"
+       prependloop}
+      {if "\[.*"
+          "\[(.*)\|(.*)\|(.*)" -> "\1|\2\[|\31" // add to bracket counter
+          if ".+:.*"
+            "(.)(.*)\|(.*)\|(.*)" -> "\2|\3\1|\4"
+            {-> "mismatched brackets"
+             error}
+       prependloop}
+}
+
+while "[^:]+:.*:.*"
+  instruction
+
+".*:.*:(.*)" -> "\1"
