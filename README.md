@@ -32,7 +32,7 @@ There are a couple of special cases:
 There are also three statements: if, while and map.
 
 
-If statements take a regex to test the current value against, and two operations - which may be statements themselves - to do the first if the regex matches and the second if it doesn't.
+If statements take a regex to test the current value against, and two operations - which may be statements themselves, or blocks (see below) - to do the first if the regex matches and the second if it doesn't.
 ```
 if "regex"
   "a" -> "b"
@@ -69,6 +69,38 @@ map "(.*):(.*)"
   . -> "[\0]" // operation to perform on the capture groups
   "\2\1"
 // maps hello:world to [world][hello]
+```
+
+
+You can wrap several lines in `{}` to form a block which will be treated as a single expression for the purposes of conditional branches and suchlike.
+```
+if "regex"
+  . -> .
+  { "a" -> "b"
+    "b" -> "c" }
+```
+
+Blocks can be named, and then substitituted for their names:
+```
+some_block: {
+  . -> "b\0b"
+  . -> "c\0c"
+}
+
+-> "a"
+some_block
+some_block
+
+// string is now "cbcbabcbc"
+
+
+// Blocks are expanded lazily, so they can refer to themselves recursively
+recursive_block: {
+  "a" -> "b"
+  if "c"
+    recursive_block
+    "d" -> "e"
+}
 ```
 
 ## Installation
